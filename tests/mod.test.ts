@@ -158,7 +158,7 @@ describe('the richer UI', () => {
     { original: 'taught', fix: 'thought', reason: 'past tense of think', category: 'typo', explanation: '"Taught" is the past of "teach"; "thought" is the past of "think", which is what you meant.' },
   ])
 
-  test('a fix with an explanation carries a hover card on every surface, sized above its row', async ($, on) => {
+  test('a fix with an explanation carries a hover card on every surface, opening below its row', async ($, on) => {
     worldOf(on, [EXPLAINED])
     const clock = mock.clock(on)
 
@@ -176,7 +176,8 @@ describe('the richer UI', () => {
       expect(card?.props?.display).toBe('none')
       expect(card?.hover).toEqual({ display: 'flex' })
       expect(card?.props?.backgroundColor, 'opaque, so the transcript underneath never shows through').toBe('userMessageBackground')
-      expect(Number(card?.props?.top)).toBeLessThan(0)
+      expect(card?.props?.top, 'opens below the fix, keeping the prompt above it visible').toBeUndefined()
+      expect(Number(card?.props?.bottom)).toBeLessThan(0)
       expect(textOf(card)).toContain('past of "teach"')
       expect(elementsOf(drawn, 'Text').some(text => text.props?.color === 'error')).toBe(true)
       expect(elementsOf(drawn, 'Text').some(text => text.props?.backgroundColor !== undefined)).toBe(false)

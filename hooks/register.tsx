@@ -72,7 +72,7 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
       {explanation !== undefined && layout.canHover && (
         <Box
           position="absolute"
-          top={-cardRows}
+          bottom={-cardRows}
           left={2}
           width={layout.cardWidth}
           display="none"
@@ -80,9 +80,10 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
           borderStyle="round"
           borderColor="suggestion"
           backgroundColor="userMessageBackground"
-          paddingX={1}
         >
-          <Text wrap="wrap">{explanation}</Text>
+          <Box paddingX={1} flexGrow={1}>
+            <Text wrap="wrap">{explanation}</Text>
+          </Box>
         </Box>
       )}
     </Box>
