@@ -15,6 +15,8 @@ Each fix also comes with a short explanation of the rule behind it:
 - **Fullscreen terminal or desktop app:** hover over the fix to see the explanation in a card.
 - **Other surfaces:** the explanation prints as a dim `↳` line under the fix.
 
+To always print it inline, or to hide it, change the **Explanations** setting (see [Settings](#settings)).
+
 ![Hovering a fix opens a card that explains the rule behind it](docs/hover.png)
 
 Fixes stay attached to their prompts after `--resume`.
@@ -62,6 +64,7 @@ Change them under `/config` → **language-coach**:
 | Coach effort | `low` | How hard Sonnet or Opus think about each review (`low` to `max`, or `model default`). Haiku 4.5 takes no effort setting and ignores it. |
 | Minimum prompt length | `8` | Shorter prompts are not coached. |
 | Maximum prompt length | `2000` | Longer prompts are not coached. |
+| Explanations | `popup` | `popup` opens a card on hover (inline where the surface can't hover), `inline` always prints a `↳` line under the fix, `off` hides it. History keeps explanations in every mode. |
 | Coach my prompts | on | Turns the coach off without uninstalling it. |
 | Status-line counter | off | Shows `✎ 2 fixes today · 5 clean in a row` under the prompt box. |
 

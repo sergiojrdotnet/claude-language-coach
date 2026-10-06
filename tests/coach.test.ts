@@ -123,6 +123,15 @@ describe('effort', () => {
   })
 })
 
+describe('explanations', () => {
+  test('default to popup, take a listed mode, and fall back to popup for anything else', () => {
+    expect(settingsOf({}).explanations).toBe('popup')
+    expect(settingsOf({ explanations: 'inline' }).explanations).toBe('inline')
+    expect(settingsOf({ explanations: 'off' }).explanations).toBe('off')
+    expect(settingsOf({ explanations: 'tooltip' }).explanations).toBe('popup')
+  })
+})
+
 describe('what gets coached', () => {
   test('skips commands, shell input, framed engine rows and prompts outside the length bounds', () => {
     expect(isCoachable('Can you check the deploy logs?', SETTINGS)).toBe(true)

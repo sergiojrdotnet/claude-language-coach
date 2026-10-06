@@ -3,7 +3,7 @@ import type { Elements, EngineInterface, Register, RenderChildren, RenderSurface
 
 import type { Entry, Fix } from '../types'
 import { isCoachable, parseFixes, requestFor, rowIdOf, settingsOf, textKey } from './coach'
-import type { Settings } from './coach'
+import type { Explanations, Settings } from './coach'
 import {
   appendEntry,
   asDaily,
@@ -38,20 +38,24 @@ const isPaused = atom({ plugin: 'language-coach', key: 'isPaused' } as const, fa
 
 type Table = { Box: Elements['terminal']['Box']; Text: Elements['terminal']['Text'] }
 
-type Layout = { canHover: boolean; cardWidth: number }
+type Layout = { explanations: Explanations; cardWidth: number }
 
 const countOf = (stored: unknown) => (typeof stored === 'number' && Number.isFinite(stored) ? stored : 0)
 
-const layoutOf = (surface: RenderSurface, viewport: RenderViewport | undefined, columns: number): Layout => ({
-  canHover: surface === 'desktop' || (surface === 'terminal' && viewport?.isFullscreen === true),
-  cardWidth: Math.max(24, Math.min(72, columns - 6)),
-})
+const layoutOf = (surface: RenderSurface, viewport: RenderViewport | undefined, columns: number, explanations: Explanations): Layout => {
+  const canHover = surface === 'desktop' || (surface === 'terminal' && viewport?.isFullscreen === true)
 
-const explanationOf = (fix: Fix) =>
-  fix.explanation !== undefined && fix.explanation !== fix.reason ? fix.explanation : undefined
+  return {
+    explanations: explanations === 'popup' && !canHover ? 'inline' : explanations,
+    cardWidth: Math.max(24, Math.min(72, columns - 6)),
+  }
+}
+
+const explanationOf = (fix: Fix, layout: Layout) =>
+  layout.explanations !== 'off' && fix.explanation !== undefined && fix.explanation !== fix.reason ? fix.explanation : undefined
 
 const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lead: RenderChildren, tag: string) => {
-  const explanation = explanationOf(fix)
+  const explanation = explanationOf(fix, layout)
   const cardRows = explanation === undefined ? 0 : linesWhenWrapped(explanation, layout.cardWidth - 4) + 2
 
   return (
@@ -65,12 +69,12 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
         </Text>
         <Text dimColor>{tag}</Text>
       </Text>
-      {explanation !== undefined && !layout.canHover && (
+      {explanation !== undefined && layout.explanations === 'inline' && (
         <Text dimColor italic wrap="wrap">
           {`  ↳ ${explanation}`}
         </Text>
       )}
-      {explanation !== undefined && layout.canHover && (
+      {explanation !== undefined && layout.explanations === 'popup' && (
         <Box
           position="absolute"
           top={-cardRows}
@@ -217,7 +221,7 @@ export const register: Register = (on, options) => {
     if (fixes.length === 0) return drawn
 
     const { Box, Text } = $.ui.resolve(e)
-    const layout = layoutOf(e.surface, e.viewport, e.viewport?.columns ?? 80)
+    const layout = layoutOf(e.surface, e.viewport, e.viewport?.columns ?? 80, settings.explanations)
     const lead = (
       <Text dimColor hover={{ color: 'suggestion', dimColor: false }}>
         {'✎ '}
@@ -258,7 +262,7 @@ export const register: Register = (on, options) => {
     const summary = summarize(entries)
     const recent = entries.flatMap(entry => entry.fixes).slice(-RECENT_FIXES).reverse()
     const state = !settings.isEnabled ? 'off in /config' : paused ? 'paused' : 'on'
-    const layout = layoutOf(e.surface, e.viewport, e.props.bodyColumns)
+    const layout = layoutOf(e.surface, e.viewport, e.props.bodyColumns, settings.explanations)
 
     const chart = () => {
       if (e.surface === 'terminal') {

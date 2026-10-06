@@ -3,6 +3,8 @@ import type { ModelCompleteRequest, ModelEffort, PluginOptions } from 'claude-co
 import type { Category, Fix } from '../types'
 import { SYSTEM, USER_TEMPLATE } from './prompt'
 
+export type Explanations = 'popup' | 'inline' | 'off'
+
 export type Settings = {
   targetLanguage: string
   nativeLanguage: string
@@ -10,12 +12,14 @@ export type Settings = {
   effort: ModelEffort | undefined
   minLength: number
   maxLength: number
+  explanations: Explanations
   isEnabled: boolean
   showsStatus: boolean
 }
 
 const CATEGORIES: readonly Category[] = ['typo', 'grammar', 'transfer', 'word-choice', 'phrasing']
 const EFFORTS: readonly ModelEffort[] = ['low', 'medium', 'high', 'xhigh', 'max']
+const EXPLANATIONS: readonly Explanations[] = ['popup', 'inline', 'off']
 const MAX_FIXES = 5
 const REPLY_TOKENS = 600
 const REPLY_TIMEOUT_MS = 30_000
@@ -34,6 +38,7 @@ export const settingsOf = (options: PluginOptions): Settings => ({
   effort: options.effort === undefined ? 'low' : EFFORTS.find(level => level === options.effort),
   minLength: count(options.minLength, 8),
   maxLength: count(options.maxLength, 2000),
+  explanations: EXPLANATIONS.find(mode => mode === options.explanations) ?? 'popup',
   isEnabled: options.enabled !== false,
   showsStatus: options.statusLine === true,
 })

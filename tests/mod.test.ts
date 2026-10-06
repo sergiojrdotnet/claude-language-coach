@@ -286,6 +286,57 @@ describe('explanations everywhere', () => {
     }
   })
 
+  test('set to inline, the explanation prints as a second line even where a card could open', { options: { explanations: 'inline' } }, async ($, on) => {
+    worldOf(on, [EXPLAINED])
+    const clock = mock.clock(on)
+
+    await $.session.start(SESSION)
+    await $.prompt.submit(typed('I taught we were moving them'))
+    await settle(clock)
+    await $.command.run(coachCommand())
+
+    for (const surface of SURFACES) {
+      const row = userRow('I taught we were moving them', surface)
+      const prompt = await $.ui.mount({ plugin: PLUGIN, surface, component: 'UserMessage', requestId: 'row', props: row.props, viewport: row.viewport })
+      const pane = await $.ui.mount({ plugin: PLUGIN, surface, component: 'Pane', requestId: 'language-coach', props: PANE_PROPS, viewport: row.viewport })
+
+      for (const drawn of [await prompt.drawn(), await pane.drawn()]) {
+        expect(textOf(drawn)).toContain(`↳ ${EXPLANATION}`)
+        expect(elementsOf(drawn, 'Box').some(box => box.props?.position === 'absolute')).toBe(false)
+      }
+      await prompt.unmount()
+      await pane.unmount()
+    }
+  })
+
+  test('set to off, no explanation draws under prompts or in the pane, but history keeps it', { options: { explanations: 'off' } }, async ($, on) => {
+    const world = worldOf(on, [EXPLAINED])
+    const clock = mock.clock(on)
+
+    await $.session.start(SESSION)
+    await $.prompt.submit(typed('I taught we were moving them'))
+    await settle(clock)
+    await $.command.run(coachCommand())
+
+    for (const surface of SURFACES) {
+      for (const isFullscreen of [true, false]) {
+        const row = userRow('I taught we were moving them', surface, isFullscreen)
+        const prompt = await $.ui.mount({ plugin: PLUGIN, surface, component: 'UserMessage', requestId: 'row', props: row.props, viewport: row.viewport })
+        const pane = await $.ui.mount({ plugin: PLUGIN, surface, component: 'Pane', requestId: 'language-coach', props: PANE_PROPS, viewport: row.viewport })
+
+        for (const drawn of [await prompt.drawn(), await pane.drawn()]) {
+          expect(textOf(drawn)).toContain('taught → thought')
+          expect(textOf(drawn)).not.toContain('past of "teach"')
+          expect(elementsOf(drawn, 'Box').some(box => box.props?.position === 'absolute')).toBe(false)
+        }
+        await prompt.unmount()
+        await pane.unmount()
+      }
+    }
+
+    expect(JSON.stringify(world.stored.history)).toContain('past of \\"teach\\"')
+  })
+
   test('fixes from an earlier session draw again under the same prompt, with no new review', async ($, on) => {
     const fixes = [{ original: 'taught', fix: 'thought', reason: 'past tense of think', category: 'typo', explanation: EXPLANATION }]
     const world = worldOf(on, [], { remembered: [{ key: textKey('I taught we were moving them'), fixes }] })

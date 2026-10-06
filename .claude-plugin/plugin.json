@@ -67,6 +67,17 @@
       "description": "Prompts longer than this many characters (usually pasted logs or documents) are not coached.",
       "default": 2000
     },
+    "explanations": {
+      "type": "string",
+      "title": "Explanations",
+      "description": "How each fix shows the rule behind it: 'popup' opens a card on hover (where the surface can't hover, it prints inline instead), 'inline' always prints it under the fix, 'off' hides it.",
+      "default": "popup",
+      "options": [
+        "popup",
+        "inline",
+        "off"
+      ]
+    },
     "enabled": {
       "type": "boolean",
       "title": "Coach my prompts",
