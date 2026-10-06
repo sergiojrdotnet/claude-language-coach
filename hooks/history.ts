@@ -95,5 +95,7 @@ export const asRemembered = (stored: unknown): Remembered[] =>
 export const remember = (rows: readonly Remembered[], key: string, fixes: Fix[]) =>
   [...rows.filter(row => row.key !== key), { key, fixes }].slice(-REMEMBERED_LIMIT)
 
+export const forget = (rows: readonly Remembered[], key: string) => rows.filter(row => row.key !== key)
+
 export const rememberedByKey = (rows: readonly Remembered[]): Record<string, Fix[]> =>
   Object.fromEntries(rows.map(row => [row.key, row.fixes]))

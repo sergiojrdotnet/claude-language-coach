@@ -315,3 +315,36 @@ describe('explanations everywhere', () => {
     await ui.unmount()
   })
 })
+
+describe('a prompt sent again', () => {
+  const OLD = [{ original: 'taught', fix: 'thought', reason: 'old review', category: 'typo' }]
+  const stored = { remembered: [{ key: rowKey('I taught we were moving them'), fixes: OLD }] }
+
+  test('remembered fixes vanish while the new review runs, then the new review draws', async ($, on) => {
+    worldOf(on, [reply([{ original: 'taught', fix: 'thought', reason: 'new review', category: 'typo' }])], stored)
+    const clock = mock.clock(on)
+
+    await $.session.start(SESSION)
+    expect(textOf(await $.ui.render(userRow('I taught we were moving them')))).toContain('old review')
+
+    await $.prompt.submit(typed('I taught we were moving them'))
+    expect(await $.ui.render(userRow('I taught we were moving them'))).toEqual(ENGINE_ROW)
+
+    await settle(clock)
+    const drawn = textOf(await $.ui.render(userRow('I taught we were moving them')))
+    expect(drawn).toContain('new review')
+    expect(drawn).not.toContain('old review')
+  })
+
+  test('a clean new review forgets the remembered fixes for good', async ($, on) => {
+    const world = worldOf(on, [reply([])], stored)
+    const clock = mock.clock(on)
+
+    await $.session.start(SESSION)
+    await $.prompt.submit(typed('I taught we were moving them'))
+    await settle(clock)
+
+    expect(await $.ui.render(userRow('I taught we were moving them'))).toEqual(ENGINE_ROW)
+    expect(world.stored.remembered).toEqual([])
+  })
+})

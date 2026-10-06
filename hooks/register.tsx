@@ -12,6 +12,7 @@ import {
   dayKey,
   nextStreak,
   recordReview,
+  forget,
   remember,
   rememberedByKey,
   statusText,
@@ -129,10 +130,12 @@ async function coach($: EngineInterface, settings: Settings, prompt: string) {
   await update($, daily, () => days)
   await update($, streak, () => run)
 
+  const key = rowKey(prompt)
+  const rows = asRemembered(await $.store.get(REMEMBERED_KEY))
+  await $.store.set(REMEMBERED_KEY, fixes.length > 0 ? remember(rows, key, fixes) : forget(rows, key))
+
   if (fixes.length > 0) {
-    const key = rowKey(prompt)
     await $.state.set({ ...coaching, id: key }, { fixes })
-    await $.store.set(REMEMBERED_KEY, remember(asRemembered(await $.store.get(REMEMBERED_KEY)), key, fixes))
 
     const entry: Entry = { at: now, language: settings.targetLanguage, fixes }
     const entries = appendEntry(asEntries(await $.store.get(HISTORY_KEY)), entry)
@@ -174,6 +177,8 @@ export const register: Register = (on, options) => {
     const prompt = entered.text.trim()
     if (!isCoachable(prompt, settings) || (await read($, isPaused))) return entered
 
+    // Fixes remembered from an earlier review of the same text must not stand in for the new one.
+    await $.state.set({ ...coaching, id: rowKey(prompt) }, { fixes: [] })
     // A timer runs the review in a dispatch of its own, so interrupting the turn does not abort it.
     $.clock.after(0, () => void coach($, settings, prompt))
 

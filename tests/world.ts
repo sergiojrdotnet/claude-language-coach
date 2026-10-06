@@ -1,5 +1,4 @@
 import type { ModelCompleteRequest, ModelCompleteResult, On, PromptOrigin, PromptSubmitInput, RenderElement, RenderInput } from 'claude-code'
-import { mock } from 'claude-code/testing'
 
 export type World = {
   requests: ModelCompleteRequest[]
@@ -9,6 +8,7 @@ export type World = {
   toasts: string[]
   logs: string[]
   statuses: (string | undefined)[]
+  stored: Record<string, unknown>
 }
 
 export const USAGE = { input_tokens: 900, output_tokens: 40, cache_read_input_tokens: 0, cache_creation_input_tokens: 0 }
@@ -16,9 +16,14 @@ export const USAGE = { input_tokens: 900, output_tokens: 40, cache_read_input_to
 export const ENGINE_ROW: RenderElement = { type: 'Text', props: {}, children: ['> the prompt as the engine draws it'] } as RenderElement
 
 export const worldOf = (on: On, replies: string[] = [], stored: Readonly<Record<string, unknown>> = {}): World => {
-  const world: World = { requests: [], replies: [...replies], commands: [], opened: [], toasts: [], logs: [], statuses: [] }
+  const world: World = { requests: [], replies: [...replies], commands: [], opened: [], toasts: [], logs: [], statuses: [], stored: { ...stored } }
 
-  mock.store(on, stored)
+  on('store.get', ($, e) => ({ value: world.stored[e.key] }))
+  on('store.set', ($, e) => {
+    world.stored[e.key] = e.value
+
+    return { value: undefined }
+  })
   on('model.complete', ($, e): { value: ModelCompleteResult } => {
     world.requests.push(e)
     const text = world.replies.shift()
