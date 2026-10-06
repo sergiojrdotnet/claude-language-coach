@@ -1,0 +1,15 @@
+{
+  "name": "language-coach",
+  "description": "Language Coach: writing feedback on every Claude Code prompt, reviewed out of band by a small model.",
+  "owner": {
+    "name": "Sergio Alves Junior",
+    "url": "https://github.com/sergiojrdotnet"
+  },
+  "plugins": [
+    {
+      "name": "language-coach",
+      "source": "./",
+      "description": "Writing feedback on every prompt you type, reviewed out of band by a small model."
+    }
+  ]
+}

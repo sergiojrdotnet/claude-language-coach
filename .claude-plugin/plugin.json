@@ -1,0 +1,69 @@
+{
+  "name": "language-coach",
+  "version": "0.1.0",
+  "description": "Writing feedback on every prompt you type, in the language you are practising: a small model reviews it out of band and the fixes appear under your prompt, never in the main conversation.",
+  "author": {
+    "name": "Sergio Alves Junior",
+    "url": "https://github.com/sergiojrdotnet"
+  },
+  "homepage": "https://github.com/sergiojrdotnet/claude-language-coach",
+  "repository": "https://github.com/sergiojrdotnet/claude-language-coach",
+  "license": "MIT",
+  "keywords": [
+    "language",
+    "english",
+    "writing",
+    "coach",
+    "mod"
+  ],
+  "types": "./types/index.d.ts",
+  "userConfig": {
+    "targetLanguage": {
+      "type": "string",
+      "title": "Language you practise",
+      "description": "The language your prompts are coached in. Prompts written in another language are left alone.",
+      "default": "English"
+    },
+    "nativeLanguage": {
+      "type": "string",
+      "title": "Your native language",
+      "description": "Helps the coach spot transfer errors (false friends, calques, prepositions) from your native language.",
+      "default": "Brazilian Portuguese"
+    },
+    "model": {
+      "type": "string",
+      "title": "Coach model",
+      "description": "The model that reviews each prompt. Haiku is fast and cheap; the main session's model is never used.",
+      "default": "haiku",
+      "options": [
+        "haiku",
+        "sonnet",
+        "opus"
+      ]
+    },
+    "minLength": {
+      "type": "number",
+      "title": "Minimum prompt length",
+      "description": "Prompts shorter than this many characters are not coached.",
+      "default": 8
+    },
+    "maxLength": {
+      "type": "number",
+      "title": "Maximum prompt length",
+      "description": "Prompts longer than this many characters (usually pasted logs or documents) are not coached.",
+      "default": 2000
+    },
+    "enabled": {
+      "type": "boolean",
+      "title": "Coach my prompts",
+      "description": "Turn the coach off without uninstalling it. /language-coach off pauses it for the current session only.",
+      "default": true
+    },
+    "statusLine": {
+      "type": "boolean",
+      "title": "Status-line counter",
+      "description": "Show today's fixes and your clean-prompt streak under the prompt box.",
+      "default": false
+    }
+  }
+}
