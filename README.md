@@ -6,6 +6,8 @@
 
 Get writing feedback on every prompt you type, in the language you are practising. A small model reviews each prompt in a separate call and shows the fixes under it. Nothing is added to the main conversation, so its context stays clean. Each review is a small, separate request that counts against your usage (see [Cost and privacy](#cost-and-privacy)).
 
+https://github.com/user-attachments/assets/4a21de20-32ec-4cdb-b7a4-b9ff78d2b93b
+
 ![Fixes under a prompt: the wrong words in red, the fixes in green, with the category and a short reason](docs/inline.png)
 
 Each fix also comes with a short explanation of the rule behind it:
