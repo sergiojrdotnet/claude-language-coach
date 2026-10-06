@@ -1,4 +1,4 @@
-import type { ModelCompleteRequest, PluginOptions } from 'claude-code'
+import type { ModelCompleteRequest, ModelEffort, PluginOptions } from 'claude-code'
 
 import type { Category, Fix } from '../types'
 import { SYSTEM, USER_TEMPLATE } from './prompt'
@@ -7,6 +7,7 @@ export type Settings = {
   targetLanguage: string
   nativeLanguage: string
   model: string
+  effort: ModelEffort | undefined
   minLength: number
   maxLength: number
   isEnabled: boolean
@@ -14,6 +15,7 @@ export type Settings = {
 }
 
 const CATEGORIES: readonly Category[] = ['typo', 'grammar', 'transfer', 'word-choice', 'phrasing']
+const EFFORTS: readonly ModelEffort[] = ['low', 'medium', 'high', 'xhigh', 'max']
 const MAX_FIXES = 5
 const REPLY_TOKENS = 600
 const REPLY_TIMEOUT_MS = 30_000
@@ -29,6 +31,7 @@ export const settingsOf = (options: PluginOptions): Settings => ({
   targetLanguage: text(options.targetLanguage, 'English'),
   nativeLanguage: text(options.nativeLanguage, 'Brazilian Portuguese'),
   model: text(options.model, 'haiku'),
+  effort: options.effort === undefined ? 'low' : EFFORTS.find(level => level === options.effort),
   minLength: count(options.minLength, 8),
   maxLength: count(options.maxLength, 2000),
   isEnabled: options.enabled !== false,
@@ -63,6 +66,7 @@ export const requestFor = (prompt: string, settings: Settings): ModelCompleteReq
 
   return {
     model: settings.model,
+    ...(settings.effort !== undefined && { effort: settings.effort }),
     system: fill(SYSTEM, values),
     prompt: fill(USER_TEMPLATE, values),
     maxTokens: REPLY_TOKENS,

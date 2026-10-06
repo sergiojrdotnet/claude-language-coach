@@ -115,6 +115,14 @@ describe('asking for the review', () => {
   })
 })
 
+describe('effort', () => {
+  test('defaults to low, passes a chosen level through, and sends none for the model default', () => {
+    expect(requestFor('Can you check it?', settingsOf({})).effort).toBe('low')
+    expect(requestFor('Can you check it?', settingsOf({ model: 'opus', effort: 'high' })).effort).toBe('high')
+    expect('effort' in requestFor('Can you check it?', settingsOf({ effort: 'model default' }))).toBe(false)
+  })
+})
+
 describe('what gets coached', () => {
   test('skips commands, shell input, framed engine rows and prompts outside the length bounds', () => {
     expect(isCoachable('Can you check the deploy logs?', SETTINGS)).toBe(true)

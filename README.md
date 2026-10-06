@@ -58,6 +58,7 @@ Change them under `/config` → **language-coach**:
 | Language you practise | `English` | The language your prompts are coached in. |
 | Your native language | `Brazilian Portuguese` | Helps the coach spot transfer errors (false friends, calques, prepositions). |
 | Coach model | `haiku` | `haiku`, `sonnet` or `opus`. Haiku is fast and cheap. |
+| Coach effort | `low` | How hard Sonnet or Opus think about each review (`low` to `max`, or `model default`). Haiku 4.5 takes no effort setting and ignores it. |
 | Minimum prompt length | `8` | Shorter prompts are not coached. |
 | Maximum prompt length | `2000` | Longer prompts are not coached. |
 | Coach my prompts | on | Turns the coach off without uninstalling it. |
@@ -79,7 +80,7 @@ you type ──► prompt.submit hook ──► the prompt goes to the main mode
 
 ### Cost and privacy
 
-- **Tokens per review:** about 1k input tokens and a few dozen output tokens on Haiku. Most of the input is Claude Code's fixed identity block.
+- **Tokens per review:** about 2k input tokens (roughly half of it Claude Code's fixed identity block, the rest the coach prompt) and about 85 output tokens on Haiku.
 - **Plan usage:** reviews count against your plan or API usage like any other request.
 - **Where prompts go:** your prompts go to Anthropic through your own Claude Code login, the same destination as the prompt itself. Nothing is sent anywhere else.
 

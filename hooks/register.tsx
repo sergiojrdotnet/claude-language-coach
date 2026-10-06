@@ -72,9 +72,11 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
       {explanation !== undefined && layout.canHover && (
         <Box
           position="absolute"
-          bottom={-cardRows}
+          top={-cardRows}
           left={2}
           width={layout.cardWidth}
+          height={cardRows}
+          overflow="hidden"
           display="none"
           hover={{ display: 'flex' }}
           borderStyle="round"

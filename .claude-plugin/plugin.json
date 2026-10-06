@@ -1,6 +1,6 @@
 {
   "name": "language-coach",
-  "version": "0.1.2",
+  "version": "0.1.0",
   "description": "Writing feedback on every prompt you type, in the language you are practising: a small model reviews it out of band and the fixes appear under your prompt, never in the main conversation.",
   "author": {
     "name": "Sergio Alves Junior",
@@ -39,6 +39,20 @@
         "haiku",
         "sonnet",
         "opus"
+      ]
+    },
+    "effort": {
+      "type": "string",
+      "title": "Coach effort",
+      "description": "How hard Sonnet or Opus think about each review; low is fast and enough for a grammar check. Haiku 4.5 takes no effort setting, so it ignores this. 'model default' leaves the model's own (Sonnet high, Opus medium).",
+      "default": "low",
+      "options": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max",
+        "model default"
       ]
     },
     "minLength": {
