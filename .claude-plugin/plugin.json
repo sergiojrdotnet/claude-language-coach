@@ -1,6 +1,6 @@
 {
   "name": "language-coach",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Writing feedback on every prompt you type, in the language you are practising: a small model reviews it out of band and the fixes appear under your prompt, never in the main conversation.",
   "author": {
     "name": "Sergio Alves Junior",
