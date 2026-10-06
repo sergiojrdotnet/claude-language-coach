@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'claude-code/testing'
 
 import { fill, isCoachable, jsonObjects, parseFixes, requestFor, settingsOf } from '../hooks/coach'
-import { dayKey, nextStreak, recordReview, statusText, summarize } from '../hooks/history'
+import { appendEntry, BYTE_BUDGET, dayKey, nextStreak, recordReview, statusText, summarize, withinBudget } from '../hooks/history'
 import { glyphsOf, rasterCells, TREND_DAYS, trendOf, trendSummary, trendSvg } from '../hooks/trend'
 import { linesWhenWrapped } from '../hooks/wrap'
 import type { Entry } from '../types'
@@ -186,5 +186,18 @@ describe('daily stats, streak and trend', () => {
     expect(linesWhenWrapped('short', 20)).toBe(1)
     expect(linesWhenWrapped('one two three four five', 9)).toBe(3)
     expect(linesWhenWrapped('x'.repeat(25), 10)).toBe(3)
+  })
+})
+
+describe('storage stays inside the 4 MiB store', () => {
+  test('history and the cache drop their oldest rows once past the byte budget', () => {
+    const big = 'x'.repeat(1000)
+    const fix = { original: big.slice(0, 200), fix: big.slice(0, 200), reason: big.slice(0, 160), category: 'typo' as const, explanation: big.slice(0, 400) }
+    let entries: Entry[] = []
+    for (let at = 0; at < 500; at++) entries = appendEntry(entries, { at, language: 'English', fixes: [fix, fix, fix, fix, fix] })
+
+    expect(JSON.stringify(entries).length).toBeLessThanOrEqual(BYTE_BUDGET)
+    expect(entries.at(-1)?.at).toBe(499)
+    expect(withinBudget([1, 2, 3], 6)).toEqual([2, 3])
   })
 })

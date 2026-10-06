@@ -2,6 +2,18 @@ import type { Category, Daily, Day, Entry, Fix, Remembered } from '../types'
 
 export const HISTORY_LIMIT = 500
 
+// $.store holds at most 4 MiB of JSON for the whole plugin; history and the cache each get well under half.
+export const BYTE_BUDGET = 1_500_000
+
+export const withinBudget = <T>(rows: readonly T[], budget = BYTE_BUDGET): T[] => {
+  const sizes = rows.map(row => JSON.stringify(row).length + 1)
+  let total = sizes.reduce((sum, size) => sum + size, 2)
+  let first = 0
+  while (total > budget && first < rows.length) total -= sizes[first++]!
+
+  return rows.slice(first)
+}
+
 export type Recurring = { original: string; fix: string; count: number; explanation?: string }
 
 export type Summary = {
@@ -11,7 +23,8 @@ export type Summary = {
   recurring: Recurring[]
 }
 
-export const appendEntry = (entries: readonly Entry[], entry: Entry) => [...entries, entry].slice(-HISTORY_LIMIT)
+export const appendEntry = (entries: readonly Entry[], entry: Entry) =>
+  withinBudget([...entries, entry].slice(-HISTORY_LIMIT))
 
 export const asEntries = (stored: unknown): Entry[] =>
   Array.isArray(stored) ? stored.filter((entry): entry is Entry => Array.isArray(entry?.fixes)) : []
@@ -93,7 +106,7 @@ export const asRemembered = (stored: unknown): Remembered[] =>
     : []
 
 export const remember = (rows: readonly Remembered[], key: string, fixes: Fix[]) =>
-  [...rows.filter(row => row.key !== key), { key, fixes }].slice(-REMEMBERED_LIMIT)
+  withinBudget([...rows.filter(row => row.key !== key), { key, fixes }].slice(-REMEMBERED_LIMIT))
 
 export const forget = (rows: readonly Remembered[], key: string) => rows.filter(row => row.key !== key)
 
