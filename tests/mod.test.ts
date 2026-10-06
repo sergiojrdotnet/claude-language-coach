@@ -175,6 +175,7 @@ describe('the richer UI', () => {
       expect(textOf(drawn)).toContain('typo · past tense of think')
       expect(card?.props?.display).toBe('none')
       expect(card?.hover).toEqual({ display: 'flex' })
+      expect(card?.props?.backgroundColor, 'opaque, so the transcript underneath never shows through').toBe('userMessageBackground')
       expect(Number(card?.props?.top)).toBeLessThan(0)
       expect(textOf(card)).toContain('past of "teach"')
       expect(elementsOf(drawn, 'Text').some(text => text.props?.color === 'error')).toBe(true)

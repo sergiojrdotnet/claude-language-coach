@@ -83,23 +83,6 @@ you type ──► prompt.submit hook ──► the prompt goes to the main mode
 - **Plan usage:** reviews count against your plan or API usage like any other request.
 - **Where prompts go:** your prompts go to Anthropic through your own Claude Code login, the same destination as the prompt itself. Nothing is sent anywhere else.
 
-## How the prompt was chosen
-
-The coach prompt in `hooks/prompt.ts` was picked by a blind evaluation on real Claude Haiku 4.5, run through the same `$.model.complete` path the mod uses:
-
-1. **Test set:** 70 prompts (real developer prompts plus synthetic traps), each labeled with the errors a native editor would fix.
-2. **Split:** the prompts were divided into a tuning half and a held-out test half.
-3. **Candidates:** five prompt designs were tuned on the first half only.
-4. **Judging:** blind judges scored each design's output on the held-out half for missed errors, false flags, fix quality and format.
-
-| Prompt (held-out half) | Recall | Precision | Output tokens |
-| --- | --- | --- | --- |
-| Shipped: calibrated + explanations | 0.76 | 0.82 | ~83 |
-| Same prompt without explanations | 0.76 | 0.93 | ~46 |
-| Original hook prompt | 0.91 | 0.80 | ~119 (prose outside the JSON) |
-
-Precision is weighted heavily because the coach runs on every prompt: a wrong correction costs more than a missed one. The evaluation data contains private prompts, so it is not published.
-
 ## Development
 
 ```
@@ -109,7 +92,3 @@ claude --plugin-dir .          # run a session with the local copy
 ```
 
 The coach prompt lives in `hooks/prompt.ts`. It uses `{{TARGET_LANGUAGE}}`, `{{NATIVE_LANGUAGE}}` and `{{PROMPT}}` placeholders, so it stays language-generic.
-
-## License
-
-MIT

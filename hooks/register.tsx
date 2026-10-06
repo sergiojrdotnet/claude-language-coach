@@ -79,6 +79,7 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
           hover={{ display: 'flex' }}
           borderStyle="round"
           borderColor="suggestion"
+          backgroundColor="userMessageBackground"
           paddingX={1}
         >
           <Text wrap="wrap">{explanation}</Text>
