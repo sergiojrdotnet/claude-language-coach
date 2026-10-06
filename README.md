@@ -54,7 +54,7 @@ Prompts that you did not type are also skipped: task notifications, scheduled ru
 
 ## Settings
 
-Change them under `/config` → **language-coach**:
+Change them under `/plugin` → **Installed** → **language-coach** → **Configure options**:
 
 | Setting | Default | What it does |
 | --- | --- | --- |
@@ -66,7 +66,26 @@ Change them under `/config` → **language-coach**:
 | Maximum prompt length | `2000` | Longer prompts are not coached. |
 | Explanations | `popup` | `popup` opens a card on hover (inline where the surface can't hover), `inline` always prints a `↳` line under the fix, `off` hides it. History keeps explanations in every mode. |
 | Coach my prompts | on | Turns the coach off without uninstalling it. |
-| Status-line counter | off | Shows `✎ 2 fixes today · 5 clean in a row` under the prompt box. |
+
+## Status line
+
+The coach exports its counters as environment variables. Your [status line](https://code.claude.com/docs/en/statusline) command inherits them, so you can show them in your own layout:
+
+| Variable | Example | What it holds |
+| --- | --- | --- |
+| `LANGUAGE_COACH_STATUS` | `✎ 2 fixes today · 5 clean in a row` | A ready-made line. `✎ coach paused` while paused, unset when the coach is off. |
+| `LANGUAGE_COACH_STATE` | `on` | `on`, `paused` (`/language-coach off`) or `off` (**Coach my prompts** turned off). |
+| `LANGUAGE_COACH_REVIEWS_TODAY` | `7` | Prompts reviewed today. |
+| `LANGUAGE_COACH_FIXES_TODAY` | `2` | Fixes found today. |
+| `LANGUAGE_COACH_STREAK` | `5` | Clean prompts in a row. |
+
+For example, in a status line script:
+
+```bash
+[ -n "$LANGUAGE_COACH_STATUS" ] && printf '%s' "$LANGUAGE_COACH_STATUS"
+```
+
+The values change when a review finishes, and the status line picks them up the next time it runs. Set `refreshInterval` on your `statusLine` to see them sooner.
 
 ## How it works
 

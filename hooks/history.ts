@@ -92,7 +92,12 @@ export const recordReview = (daily: Daily, day: string, fixes: number): Daily =>
 
 export const nextStreak = (streak: number, fixes: number) => (fixes === 0 ? streak + 1 : 0)
 
-export const statusText = (today: Day | undefined, streak: number) => {
+export type CoachState = 'on' | 'paused' | 'off'
+
+export const statusText = (state: CoachState, today: Day | undefined, streak: number) => {
+  if (state === 'off') return undefined
+  if (state === 'paused') return '✎ coach paused'
+
   const fixes = today?.fixes ?? 0
 
   return `✎ ${fixes} ${fixes === 1 ? 'fix' : 'fixes'} today · ${streak} clean in a row`

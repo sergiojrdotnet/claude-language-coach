@@ -198,32 +198,43 @@ describe('the richer UI', () => {
     expect(elementsOf(drawn, 'Box').some(box => box.props?.position === 'absolute')).toBe(false)
   })
 
-  test('the status-line counter stays off unless enabled', async ($, on) => {
-    const world = worldOf(on, [TAUGHT])
-    const clock = mock.clock(on)
-
-    await $.session.start(SESSION)
-    await $.prompt.submit(typed('I taught we were moving them'))
-    await settle(clock)
-
-    expect(world.statuses.filter(status => status !== undefined)).toEqual([])
-  })
-
-  test('enabled, it counts today\'s fixes and the clean streak', { options: { statusLine: true } }, async ($, on) => {
+  test('the status line reads today\'s fixes and the clean streak from exported variables', async ($, on) => {
     const world = worldOf(on, [reply([]), TAUGHT])
     const clock = mock.clock(on)
 
     await $.session.start(SESSION)
+    expect(world.env).toEqual({
+      LANGUAGE_COACH_STATE: 'on',
+      LANGUAGE_COACH_REVIEWS_TODAY: '0',
+      LANGUAGE_COACH_FIXES_TODAY: '0',
+      LANGUAGE_COACH_STREAK: '0',
+      LANGUAGE_COACH_STATUS: '✎ 0 fixes today · 0 clean in a row',
+    })
+
     await $.prompt.submit(typed('Can we convert it to a minimal API?'))
     await settle(clock)
-    expect(world.statuses.at(-1)).toBe('✎ 0 fixes today · 1 clean in a row')
+    expect(world.env.LANGUAGE_COACH_STREAK).toBe('1')
+    expect(world.env.LANGUAGE_COACH_STATUS).toBe('✎ 0 fixes today · 1 clean in a row')
 
     await $.prompt.submit(typed('I taught we were moving them'))
     await settle(clock)
-    expect(world.statuses.at(-1)).toBe('✎ 1 fix today · 0 clean in a row')
+    expect(world.env.LANGUAGE_COACH_REVIEWS_TODAY).toBe('2')
+    expect(world.env.LANGUAGE_COACH_FIXES_TODAY).toBe('1')
+    expect(world.env.LANGUAGE_COACH_STATUS).toBe('✎ 1 fix today · 0 clean in a row')
 
     await $.command.run(coachCommand('off'))
-    expect(world.statuses.at(-1)).toBe('✎ coach paused')
+    expect(world.env.LANGUAGE_COACH_STATE).toBe('paused')
+    expect(world.env.LANGUAGE_COACH_STATUS).toBe('✎ coach paused')
+  })
+
+  test('turned off in the plugin options, the state reads off and the ready-made line is unset', { options: { enabled: false } }, async ($, on) => {
+    const world = worldOf(on)
+    mock.clock(on)
+
+    await $.session.start(SESSION)
+
+    expect(world.env.LANGUAGE_COACH_STATE).toBe('off')
+    expect(world.env.LANGUAGE_COACH_STATUS).toBeUndefined()
   })
 
   test('the pane draws the trend as a Raster on the terminal and an Svg on desktop', async ($, on) => {

@@ -168,8 +168,10 @@ describe('daily stats, streak and trend', () => {
     expect(daily['2026-10-06']).toEqual({ prompts: 2, fixes: 2 })
     expect(nextStreak(nextStreak(0, 0), 0)).toBe(2)
     expect(nextStreak(5, 1)).toBe(0)
-    expect(statusText(daily['2026-10-06'], 2)).toBe('✎ 2 fixes today · 2 clean in a row')
-    expect(statusText({ prompts: 1, fixes: 1 }, 0)).toBe('✎ 1 fix today · 0 clean in a row')
+    expect(statusText('on', daily['2026-10-06'], 2)).toBe('✎ 2 fixes today · 2 clean in a row')
+    expect(statusText('on', { prompts: 1, fixes: 1 }, 0)).toBe('✎ 1 fix today · 0 clean in a row')
+    expect(statusText('paused', daily['2026-10-06'], 2)).toBe('✎ coach paused')
+    expect(statusText('off', daily['2026-10-06'], 2)).toBeUndefined()
   })
 
   test('the trend covers the last 30 days, a dot where nothing was reviewed', () => {

@@ -83,12 +83,6 @@
       "title": "Coach my prompts",
       "description": "Turn the coach off without uninstalling it. /language-coach off pauses it for the current session only.",
       "default": true
-    },
-    "statusLine": {
-      "type": "boolean",
-      "title": "Status-line counter",
-      "description": "Show today's fixes and your clean-prompt streak under the prompt box.",
-      "default": false
     }
   }
 }

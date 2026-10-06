@@ -7,7 +7,7 @@ export type World = {
   opened: string[]
   toasts: string[]
   logs: string[]
-  statuses: (string | undefined)[]
+  env: Record<string, string | undefined>
   stored: Record<string, unknown>
 }
 
@@ -16,7 +16,7 @@ export const USAGE = { input_tokens: 900, output_tokens: 40, cache_read_input_to
 export const ENGINE_ROW: RenderElement = { type: 'Text', props: {}, children: ['> the prompt as the engine draws it'] } as RenderElement
 
 export const worldOf = (on: On, replies: string[] = [], stored: Readonly<Record<string, unknown>> = {}): World => {
-  const world: World = { requests: [], replies: [...replies], commands: [], opened: [], toasts: [], logs: [], statuses: [], stored: { ...stored } }
+  const world: World = { requests: [], replies: [...replies], commands: [], opened: [], toasts: [], logs: [], env: {}, stored: { ...stored } }
 
   on('store.get', ($, e) => ({ value: world.stored[e.key] }))
   on('store.set', ($, e) => {
@@ -57,8 +57,8 @@ export const worldOf = (on: On, replies: string[] = [], stored: Readonly<Record<
 
     return { value: undefined }
   })
-  on('ui.status', ($, e) => {
-    world.statuses.push(e.text)
+  on('env.set', ($, e) => {
+    world.env[e.name] = e.value
 
     return { value: undefined }
   })

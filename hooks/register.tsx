@@ -99,18 +99,16 @@ const fixRow = ({ Box, Text }: Table, fix: Fix, key: string, layout: Layout, lea
 
 const tagOf = (fix: Fix) => `  ${fix.category}${fix.reason === '' ? '' : ` · ${fix.reason}`}`
 
-async function showStatus($: EngineInterface, settings: Settings) {
-  if (!settings.showsStatus || !settings.isEnabled) {
-    $.ui.status(undefined)
-    return
-  }
-  if (await read($, isPaused)) {
-    $.ui.status('✎ coach paused')
-    return
-  }
+async function exportStatus($: EngineInterface, settings: Settings) {
+  const today = (await read($, daily))[dayKey(await $.clock.now())]
+  const run = await read($, streak)
+  const state = !settings.isEnabled ? 'off' : (await read($, isPaused)) ? 'paused' : 'on'
 
-  const days = await read($, daily)
-  $.ui.status(statusText(days[dayKey(await $.clock.now())], await read($, streak)))
+  await $.env.set('LANGUAGE_COACH_STATE', state)
+  await $.env.set('LANGUAGE_COACH_REVIEWS_TODAY', String(today?.prompts ?? 0))
+  await $.env.set('LANGUAGE_COACH_FIXES_TODAY', String(today?.fixes ?? 0))
+  await $.env.set('LANGUAGE_COACH_STREAK', String(run))
+  await $.env.set('LANGUAGE_COACH_STATUS', statusText(state, today, run))
 }
 
 async function coach($: EngineInterface, settings: Settings, prompt: string, key: string) {
@@ -146,7 +144,7 @@ async function coach($: EngineInterface, settings: Settings, prompt: string, key
     await update($, history, () => entries)
   }
 
-  await showStatus($, settings)
+  await exportStatus($, settings)
 }
 
 async function fixesFor($: EngineInterface, keys: readonly string[]) {
@@ -189,7 +187,7 @@ export const register: Register = (on, options) => {
     await update($, daily, () => days)
     await update($, streak, () => run)
     await update($, remembered, () => rows)
-    await showStatus($, settings)
+    await exportStatus($, settings)
 
     return next(e)
   })
@@ -242,7 +240,7 @@ export const register: Register = (on, options) => {
     const verb = e.args.trim().toLowerCase()
     if (verb === 'off' || verb === 'on') {
       await update($, isPaused, () => verb === 'off')
-      await showStatus($, settings)
+      await exportStatus($, settings)
       $.ui.toast(verb === 'off' ? 'Coaching paused for this session.' : 'Coaching resumed.')
 
       return {}
@@ -261,7 +259,7 @@ export const register: Register = (on, options) => {
     const hasTrend = bars.some(bar => bar.rate !== undefined)
     const summary = summarize(entries)
     const recent = entries.flatMap(entry => entry.fixes).slice(-RECENT_FIXES).reverse()
-    const state = !settings.isEnabled ? 'off in /config' : paused ? 'paused' : 'on'
+    const state = !settings.isEnabled ? 'off in plugin options' : paused ? 'paused' : 'on'
     const layout = layoutOf(e.surface, e.viewport, e.props.bodyColumns, settings.explanations)
 
     const chart = () => {
@@ -342,7 +340,7 @@ export const register: Register = (on, options) => {
             label={paused ? 'Resume' : 'Pause'}
             onPress={async () => {
               await update($, isPaused, value => !value)
-              await showStatus($, settings)
+              await exportStatus($, settings)
             }}
           />
           <Button
@@ -356,7 +354,7 @@ export const register: Register = (on, options) => {
               await update($, remembered, () => ({}))
               await update($, daily, () => ({}))
               await update($, streak, () => 0)
-              await showStatus($, settings)
+              await exportStatus($, settings)
             }}
           />
         </Box>

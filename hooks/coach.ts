@@ -14,7 +14,6 @@ export type Settings = {
   maxLength: number
   explanations: Explanations
   isEnabled: boolean
-  showsStatus: boolean
 }
 
 const CATEGORIES: readonly Category[] = ['typo', 'grammar', 'transfer', 'word-choice', 'phrasing']
@@ -40,7 +39,6 @@ export const settingsOf = (options: PluginOptions): Settings => ({
   maxLength: count(options.maxLength, 2000),
   explanations: EXPLANATIONS.find(mode => mode === options.explanations) ?? 'popup',
   isEnabled: options.enabled !== false,
-  showsStatus: options.statusLine === true,
 })
 
 // A prompt row's render id is its stored uuid with the last group zeroed, so the first four groups name the row.
