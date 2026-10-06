@@ -2,7 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { Elements, EngineInterface, Register, RenderChildren, RenderSurface, RenderViewport } from 'claude-code'
 
 import type { Entry, Fix } from '../types'
-import { isCoachable, parseFixes, requestFor, rowKey, settingsOf } from './coach'
+import { isCoachable, parseFixes, requestFor, rowIdOf, settingsOf, textKey } from './coach'
 import type { Settings } from './coach'
 import {
   appendEntry,
@@ -109,7 +109,7 @@ async function showStatus($: EngineInterface, settings: Settings) {
   $.ui.status(statusText(days[dayKey(await $.clock.now())], await read($, streak)))
 }
 
-async function coach($: EngineInterface, settings: Settings, prompt: string) {
+async function coach($: EngineInterface, settings: Settings, prompt: string, key: string) {
   const reply = await $.model.complete(requestFor(prompt, settings))
   if (!reply.isAnswered) {
     $.ui.log(`language-coach: no review (${reply.reason})`, { to: 'debug' })
@@ -130,7 +130,6 @@ async function coach($: EngineInterface, settings: Settings, prompt: string) {
   await update($, daily, () => days)
   await update($, streak, () => run)
 
-  const key = rowKey(prompt)
   const rows = asRemembered(await $.store.get(REMEMBERED_KEY))
   await $.store.set(REMEMBERED_KEY, fixes.length > 0 ? remember(rows, key, fixes) : forget(rows, key))
 
@@ -146,8 +145,29 @@ async function coach($: EngineInterface, settings: Settings, prompt: string) {
   await showStatus($, settings)
 }
 
+async function fixesFor($: EngineInterface, keys: readonly string[]) {
+  for (const key of keys) {
+    const live = await read($, { ...coaching, id: key })
+    if (live !== undefined) return live.fixes
+  }
+
+  const rows = await read($, remembered)
+
+  return keys.map(key => rows[key]).find(fixes => fixes !== undefined) ?? []
+}
+
 export const register: Register = (on, options) => {
   const settings = settingsOf(options)
+  const appendedRows = new Map<string, string>()
+
+  on('session.append', { door: 'prompt' }, async ($, e, next) => {
+    const stored = await next(e)
+    const row = rowIdOf(e.uuid)
+    const text = e.message.content.flatMap(block => (block.type === 'text' ? [block.text] : [])).join('\n').trim()
+    if (row !== undefined && e.agentId === undefined && OWN_WORDS.has(e.origin.kind)) appendedRows.set(textKey(text), row)
+
+    return stored
+  })
 
   on('session.start', async ($, e, next) => {
     await $.command.register({
@@ -177,19 +197,23 @@ export const register: Register = (on, options) => {
     const prompt = entered.text.trim()
     if (!isCoachable(prompt, settings) || (await read($, isPaused))) return entered
 
+    const text = textKey(prompt)
+    const key = appendedRows.get(text) ?? text
+    appendedRows.delete(text)
     // Fixes remembered from an earlier review of the same text must not stand in for the new one.
-    await $.state.set({ ...coaching, id: rowKey(prompt) }, { fixes: [] })
+    await $.state.set({ ...coaching, id: key }, { fixes: [] })
     // A timer runs the review in a dispatch of its own, so interrupting the turn does not abort it.
-    $.clock.after(0, () => void coach($, settings, prompt))
+    $.clock.after(0, () => void coach($, settings, prompt, key))
 
     return entered
   })
 
   on('ui.render', { component: 'UserMessage' }, async ($, e, next) => {
     const drawn = await next(e)
-    const key = rowKey(e.props.text)
-    const live = await read($, { ...coaching, id: key })
-    const fixes = live?.fixes ?? (await read($, remembered))[key] ?? []
+    if (e.requestId === 'placeholder') return drawn
+
+    const keys = [rowIdOf(e.requestId), textKey(e.props.text)].filter((key): key is string => key !== undefined)
+    const fixes = await fixesFor($, keys)
     if (fixes.length === 0) return drawn
 
     const { Box, Text } = $.ui.resolve(e)

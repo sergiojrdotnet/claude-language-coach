@@ -38,7 +38,12 @@ export const settingsOf = (options: PluginOptions): Settings => ({
   showsStatus: options.statusLine === true,
 })
 
-export const rowKey = (prompt: string) => {
+// A prompt row's render id is its stored uuid with the last group zeroed, so the first four groups name the row.
+const ROW_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-/
+
+export const rowIdOf = (id: string) => (ROW_ID.test(id) ? `row:${id.slice(0, 23)}` : undefined)
+
+export const textKey = (prompt: string) => {
   let hash = 0x811c9dc5
   for (const char of prompt.trim().replace(/\s+/g, ' ')) {
     hash = Math.imul(hash ^ char.codePointAt(0)!, 0x01000193)

@@ -71,10 +71,10 @@ export const SESSION = { surface: 'terminal', isInteractive: true, cwd: '/work' 
 
 export const typed = (text: string, origin: PromptOrigin = { kind: 'composer' }): PromptSubmitInput => ({ text, origin, wait: false })
 
-export const userRow = (text: string, surface: 'terminal' | 'desktop' = 'terminal', isFullscreen = true): RenderInput<'UserMessage'> => ({
+export const userRow = (text: string, surface: 'terminal' | 'desktop' = 'terminal', isFullscreen = true, requestId = 'row'): RenderInput<'UserMessage'> => ({
   component: 'UserMessage',
   surface,
-  requestId: 'row',
+  requestId,
   viewport: { columns: 120, rows: 40, isFullscreen },
   props: { text, origin: { kind: 'composer' }, isExpanded: false },
 })

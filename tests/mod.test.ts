@@ -1,6 +1,6 @@
 import { describe, expect, mock, test } from 'claude-code/testing'
 
-import { rowKey } from '../hooks/coach'
+import { rowIdOf, textKey } from '../hooks/coach'
 
 import { coachCommand, elementsOf, ENGINE_ROW, PANE_PROPS, reply, SESSION, textOf, typed, userRow, worldOf } from './world'
 
@@ -288,7 +288,7 @@ describe('explanations everywhere', () => {
 
   test('fixes from an earlier session draw again under the same prompt, with no new review', async ($, on) => {
     const fixes = [{ original: 'taught', fix: 'thought', reason: 'past tense of think', category: 'typo', explanation: EXPLANATION }]
-    const world = worldOf(on, [], { remembered: [{ key: rowKey('I taught we were moving them'), fixes }] })
+    const world = worldOf(on, [], { remembered: [{ key: textKey('I taught we were moving them'), fixes }] })
 
     await $.session.start(SESSION)
     const drawn = textOf(await $.ui.render(userRow('I taught we were moving them')))
@@ -318,7 +318,7 @@ describe('explanations everywhere', () => {
 
 describe('a prompt sent again', () => {
   const OLD = [{ original: 'taught', fix: 'thought', reason: 'old review', category: 'typo' }]
-  const stored = { remembered: [{ key: rowKey('I taught we were moving them'), fixes: OLD }] }
+  const stored = { remembered: [{ key: textKey('I taught we were moving them'), fixes: OLD }] }
 
   test('remembered fixes vanish while the new review runs, then the new review draws', async ($, on) => {
     worldOf(on, [reply([{ original: 'taught', fix: 'thought', reason: 'new review', category: 'typo' }])], stored)
@@ -346,5 +346,29 @@ describe('a prompt sent again', () => {
 
     expect(await $.ui.render(userRow('I taught we were moving them'))).toEqual(ENGINE_ROW)
     expect(world.stored.remembered).toEqual([])
+  })
+})
+
+describe('fixes belong to their own row', () => {
+  const PROMPT = 'I taught we were moving them'
+  const FIXES = [{ original: 'taught', fix: 'thought', reason: 'row one', category: 'typo' }]
+  const ROW_ONE = '5b6df2c7-929a-484a-a28f-000000000000'
+  const ROW_TWO = '9a1c0e55-1234-4abc-9def-000000000000'
+
+  test('after a resume, each row redraws its own fixes, not those of another row with the same text', async ($, on) => {
+    worldOf(on, [], { remembered: [{ key: rowIdOf('5b6df2c7-929a-484a-a28f-c83b79a23ddc')!, fixes: FIXES }] })
+
+    await $.session.start(SESSION)
+
+    expect(textOf(await $.ui.render(userRow(PROMPT, 'terminal', true, ROW_ONE)))).toContain('row one')
+    expect(await $.ui.render(userRow(PROMPT, 'terminal', true, ROW_TWO))).toEqual(ENGINE_ROW)
+  })
+
+  test('a row still drawn as a placeholder shows nothing yet', async ($, on) => {
+    worldOf(on, [], { remembered: [{ key: textKey(PROMPT), fixes: FIXES }] })
+
+    await $.session.start(SESSION)
+
+    expect(await $.ui.render(userRow(PROMPT, 'terminal', true, 'placeholder'))).toEqual(ENGINE_ROW)
   })
 })

@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'claude-code/testing'
 
-import { fill, isCoachable, jsonObjects, parseFixes, requestFor, settingsOf } from '../hooks/coach'
+import { fill, isCoachable, jsonObjects, parseFixes, requestFor, rowIdOf, settingsOf } from '../hooks/coach'
 import { appendEntry, BYTE_BUDGET, dayKey, nextStreak, recordReview, statusText, summarize, withinBudget } from '../hooks/history'
 import { glyphsOf, rasterCells, TREND_DAYS, trendOf, trendSummary, trendSvg } from '../hooks/trend'
 import { linesWhenWrapped } from '../hooks/wrap'
@@ -199,5 +199,13 @@ describe('storage stays inside the 4 MiB store', () => {
     expect(JSON.stringify(entries).length).toBeLessThanOrEqual(BYTE_BUDGET)
     expect(entries.at(-1)?.at).toBe(499)
     expect(withinBudget([1, 2, 3], 6)).toEqual([2, 3])
+  })
+})
+
+describe('row identity', () => {
+  test('the stored uuid and the render id of the same prompt row map to one key', () => {
+    expect(rowIdOf('5b6df2c7-929a-484a-a28f-c83b79a23ddc')).toBe(rowIdOf('5b6df2c7-929a-484a-a28f-000000000000'))
+    expect(rowIdOf('placeholder')).toBeUndefined()
+    expect(rowIdOf('row')).toBeUndefined()
   })
 })
