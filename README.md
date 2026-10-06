@@ -6,17 +6,14 @@
 
 Get writing feedback on every prompt you type, in the language you are practising. A small model reviews each prompt in a separate call and shows the fixes under it. Nothing is added to the main conversation, so its context stays clean. Each review is a small, separate request that counts against your usage (see [Cost and privacy](#cost-and-privacy)).
 
-```
-> I taught we were moving them to the same bucket
-  ✎ taught → thought  typo · past tense of think
-    ‾‾‾‾‾‾   ‾‾‾‾‾‾‾
-    red      green, bold   (your theme's error and success colors)
-```
+![Fixes under a prompt: the wrong words in red, the fixes in green, with the category and a short reason](docs/inline.png)
 
 Each fix also comes with a short explanation of the rule behind it:
 
 - **Fullscreen terminal or desktop app:** hover over the fix to see the explanation in a card.
 - **Other surfaces:** the explanation prints as a dim `↳` line under the fix.
+
+![Hovering a fix opens a card that explains the rule behind it](docs/hover.png)
 
 Fixes stay attached to their prompts after `--resume`.
 
@@ -39,6 +36,8 @@ Requires Claude Code **2.1.291 or newer** (mods / function hooks). The mods API 
 | Type a prompt | About 1–2 s later, any fixes appear under your prompt. A clean prompt shows nothing. |
 | `/language-coach` | A pane with your history: corrections by category, a 30-day trend of fixes per prompt, your recurring mistakes, and recent fixes. It has **Pause** and **Clear history** buttons. |
 | `/language-coach off` / `/language-coach on` | Pause or resume the coach for the current session. |
+
+![The /language-coach pane beside the session: totals by category, the 30-day trend, recurring mistakes and recent fixes](docs/pane.png)
 
 Prompts are skipped when they:
 
